@@ -4,7 +4,7 @@ This is a small ASP.NET Core Web API project for managing grades.
 
 ## Implemented Requirements
 
-- Reviewed the initial codebase and documented SOLID/design issues in `SOLID_REVIEW.md`
+- Reviewed the initial codebase and documented SOLID/design issues in `REVIEW.md`
 - Renamed generic classes to match the GradeBook domain:
   - `Item` -> `Grade`
   - `IItemReader` -> `IGradeRepository`
