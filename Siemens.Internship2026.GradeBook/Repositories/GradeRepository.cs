@@ -40,13 +40,13 @@ public class GradeRepository : IGradeRepository
 
         var json = await response.Content.ReadAsStringAsync();
 
-        var grades = JsonSerializer.Deserialize<List<Grade>>(
+        var gradeResponse = JsonSerializer.Deserialize<GradeResponse>(
             json,
             new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-        return grades ?? Enumerable.Empty<Grade>();
+        return gradeResponse?.Items ?? Enumerable.Empty<Grade>();
     }
 }

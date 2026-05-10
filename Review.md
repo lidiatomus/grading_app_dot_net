@@ -14,8 +14,9 @@ ItemController depends on the IItemReader abstraction, but no implementation was
 ### Fix
 Registered ItemRepository as the implementation for IItemReader in Program.cs:
 
+```csharp
 builder.Services.AddScoped<IItemReader, ItemRepository>();
-
+```
 
 ## 2 - Generic Naming
 
@@ -144,3 +145,93 @@ public async Task<IEnumerable<Grade>> GetFirstPassingActiveGradesAsync(int count
 ```
 
 This keeps the controller focused on HTTP concerns and the service focused on business logic.
+
+## 4 - In-Memory Repository Data Source
+
+### Principle affected
+Single Responsibility Principle and Dependency Inversion Principle.
+
+### Location
+`GradeRepository.cs`, methods `GetAllAsync` and `GetByIdAsync`.
+
+### Problem
+The original repository used an in-memory list as its data source.
+
+Original code:
+
+```csharp
+protected readonly List<Grade> _grades = new();
+```
+
+This was not aligned with the requirement, because the repository had to retrieve grade data from an external endpoint.
+
+The repository also kept internal state that was not needed for the final solution.
+
+### Fix
+The in-memory list was removed.
+
+The repository was refactored to use `HttpClient` and fetch the grade data from the external endpoint configured in `appsettings.json`.
+
+A response model was added because the external JSON contains the grades inside an `items` property:
+
+```csharp
+public class GradeResponse
+{
+    public List<Grade> Items { get; set; } = new();
+}
+```
+
+The repository now deserializes the external response and returns the grades:
+
+```csharp
+var gradeResponse = JsonSerializer.Deserialize<GradeResponse>(
+    json,
+    new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    });
+
+return gradeResponse?.Items ?? Enumerable.Empty<Grade>();
+```
+
+The dependency injection registration was also changed from:
+
+```csharp
+builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+```
+
+to:
+
+```csharp
+builder.Services.AddHttpClient<IGradeRepository, GradeRepository>();
+```
+
+This makes the repository responsible for data access and removes the hardcoded in-memory data source.
+
+## 5 - Framework Upgrade
+
+### Requirement
+Upgrade the project from .NET 8 to .NET 10.
+
+### Location
+`Siemens.Internship2026.GradeBook.csproj`.
+
+### Problem
+The project was originally targeting .NET 8.
+
+Original configuration:
+
+```xml
+<TargetFramework>net8.0</TargetFramework>
+```
+
+### Fix
+The target framework was updated to .NET 10.
+
+Final configuration:
+
+```xml
+<TargetFramework>net10.0</TargetFramework>
+```
+
+The project was then rebuilt using a .NET SDK version that supports .NET 10.

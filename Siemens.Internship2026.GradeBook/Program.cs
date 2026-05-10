@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+builder.Services.AddHttpClient<IGradeRepository, GradeRepository>();
 builder.Services.AddScoped<IGradeService, GradeService>();
 
 var app = builder.Build();
